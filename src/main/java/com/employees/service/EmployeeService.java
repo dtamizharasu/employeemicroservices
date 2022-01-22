@@ -5,7 +5,7 @@ import com.employees.model.Project;
 import com.employees.repository.EmployeeRepository;
 import com.employees.vo.ResponseVo;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -26,7 +26,7 @@ public class EmployeeService {
         Set<ResponseVo> empDetails = new HashSet<>();
         Set<Project> projects = new HashSet<>();
 
-        Set<Employee> employeeList = employeeRepository.findAll().stream().collect(Collectors.toSet());
+        Set<Employee> employeeList = new HashSet<>(employeeRepository.findAll());
 
         employeeList.forEach(emp -> {
             String message = "Employee Not Mapped Any Project";
@@ -34,14 +34,14 @@ public class EmployeeService {
             Project project;
             ResponseEntity<Integer[]> response =
                     restTemplate.getForEntity(
-                            "http://localhost:8083/api/allocation/projectIds/" + emp.getEmpId(),
+                            "http://Allocation-Service/api/allocation/projectIds/" + emp.getEmpId(),
                             Integer[].class);
 
             Integer[] projIds = response.getBody();
             if (projIds != null) {
                 for (Integer id : projIds) {
                     project = restTemplate
-                            .getForObject("http://localhost:8082/api/project/" + id, Project.class);
+                            .getForObject("http://Project-Service/api/project/" + id, Project.class);
                     projects.add(project);
                 }
                 responseVo.setProjects(projects);
@@ -63,12 +63,12 @@ public class EmployeeService {
         Employee employee = employeeRepository.getById(id);
         responseVo.setEmployee(employee);
         ResponseEntity<int[]> response =
-            restTemplate.getForEntity("http://localhost:8083/api/allocation/projectIds/"+id,int[].class);
+            restTemplate.getForEntity("http://Allocation-Service/api/allocation/projectIds/"+id,int[].class);
         int[] projIds = response.getBody();
             if(projIds!=null){
                 for(int ids: projIds){
                     Project project =
-                        restTemplate.getForObject("http://localhost:8082/api/project/"+ids,Project.class);
+                        restTemplate.getForObject("http://Project-Service/api/project/"+ids,Project.class);
                     projects.add(project);
                 }
             }else {
@@ -93,5 +93,25 @@ public class EmployeeService {
 
     public void deleteEmployeeById(Integer id){
         employeeRepository.deleteById(id);
+    }
+
+//    public ResponseEntity<int[]> getAllEmployeesId(){
+//
+//        ResponseEntity<int[]> responseEntity = null;
+//        int[] ids;
+//        List<Integer> listIds = employeeRepository.findAll().stream()
+//                .map(Employee::getEmpId).collect(Collectors.toList());
+//        if(!listIds.isEmpty()){
+//            ids =   listIds.stream().mapToInt(Integer::intValue).toArray();
+//            responseEntity = new ResponseEntity<>(ids, HttpStatus.ACCEPTED);
+//        }
+//
+//        return responseEntity;
+//    }
+
+    public Set<Employee> getAllEmployees(){
+
+       Set<Employee> employeeSet = new HashSet<>(employeeRepository.findAll());
+       return employeeSet;
     }
 }

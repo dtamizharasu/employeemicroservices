@@ -7,6 +7,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import io.swagger.annotations.ApiResponses;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,15 +23,18 @@ import java.util.Set;
 * 6. Delete Employee Details
 * */
 
-@Api(value = "Swagger - 2 EmployeeController")
+// Swagger URL - http://localhost:8081/swagger-ui/
+
+@Api(value = "Employee", tags = {"Employee"})
 @RestController
 @RequestMapping("/api/employee")
+@Slf4j
 public class EmployeeController {
 
     @Autowired
     EmployeeService service;
 
-    /*
+    /**
     * Get All the Employees Details
     * @return - Return List Of Employees
     */
@@ -65,9 +69,10 @@ public class EmployeeController {
      * @return - Employee
      */
     @ApiOperation(value = "Get Employee Detail",
-            response = ResponseVo.class, tags = "Employee")
+            response = Employee.class, tags = "Employee")
     @GetMapping("/{id}")
     public Employee findByEmployeeId(@PathVariable Integer id){
+        log.info("Get the Employee Details Without Project Details"+id);
         return service.findEmployeeById(id);
     }
 
@@ -75,9 +80,10 @@ public class EmployeeController {
      * @param employee - Employee Records
      * @return - Saved Employee Record
      */
-    @ApiOperation(value = "Add New Employee Record", response = Iterable.class, tags = "Employee")
+    @ApiOperation(value = "Add New Employee Record", response = Employee.class, tags = "Employee")
     @PostMapping("/saveemployee")
     public Employee saveEmployee(@RequestBody Employee employee){
+        log.info("Save New Employee Details "+employee.toString());
         return service.saveEmployee(employee);
     }
 
@@ -86,7 +92,7 @@ public class EmployeeController {
      * @return - Updated Employee Record
      */
 
-    @ApiOperation(value = "Update Employee Record", response = Iterable.class, tags = "Employee")
+    @ApiOperation(value = "Update Employee Record", response = Employee.class, tags = "Employee")
     @PutMapping("/updateemployee")
     public Employee updateEmployee(@RequestBody Employee employee){
         return service.updateEmployee(employee);
@@ -96,10 +102,34 @@ public class EmployeeController {
      * @param id - Employee Id
      * @return - Deleted Message
      */
-    @ApiOperation(value = "Delete Employee Record", response = Iterable.class, tags = "Employee")
+    @ApiOperation(value = "Delete Employee Record", response = String.class, tags = "Employee")
     @DeleteMapping("/{id}")
     public String deleteEmployeeById(@PathVariable Integer id){
         service.deleteEmployeeById(id);
         return "Employee Details Deleted";
+    }
+
+//    /**
+//     * Get Employee Record without Project
+//     * @return - All Employee Record Without Project
+//     */
+//    @ApiOperation(value = "Get All Employee Details",
+//            response = Employee.class, tags = "Employee")
+//    @GetMapping("/get/all/employees")
+//    public int[] findAllEmployees(){
+//        log.info("Get All the Employee Details Record Without Project Details");
+//        return service.getAllEmployeesId().getBody();
+//    }
+
+    /**
+     * Get Employee Record without Project
+     * @return - All Employee Record Without Project
+     */
+    @ApiOperation(value = "Get All Employee Details",
+            response = Employee.class, tags = "Employee")
+    @GetMapping("/get/all/employees")
+    public Set<Employee> findAllEmployeesDetails(){
+        log.info("Get All the Employee Details Record Without Project Details");
+        return service.getAllEmployees();
     }
 }
